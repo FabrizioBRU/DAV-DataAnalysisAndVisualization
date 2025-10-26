@@ -1,8 +1,7 @@
 # --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 # TRABALHO: ANÁLISE DE SATISFAÇÃO DA UNIVERSIDADE
 # FASE 5: ANÁLISE EXPLORATÓRIA ADICIONAL (GRÁFICOS DE CONTEXTO)
-# Autor: Fabrizio Bruzetti
-# Data: 25/10/2025 (Atualize com a data de hoje)
+# (Versão com ordenação de curso e cor do Gráfico 13 corrigida)
 # --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
 # 1. CARGA DE PACOTES E DADOS
@@ -13,19 +12,7 @@ library(ggpubr) # Para o stat_cor()
 # Lendo os dados brutos
 df <- read.csv2("./data/satisfacao.csv", header = TRUE, sep = ";")
 
-# Preparando os dados
-df_analise <- df %>%
-  mutate(
-    Sexo_label = factor(Sexo, 
-                        levels = c(0, 1), 
-                        labels = c("Masculino", "Feminino")),
-    Curso = factor(Curso),
-    Nivel.de.satisfacao = factor(Nivel.de.satisfacao, 
-                                 levels = c("Baixa", "Media", "Alta"))
-  )
-
 # --- DEFINIÇÃO DA PALETA DE CORES CONSISTENTE (CORRIGIDA) ---
-# Usando a paleta de cores exata do Gráfico 02 (Distribuição por Curso)
 cores_cursos_palette <- c(
   "Administracao" = "#F8766D", # Vermelho/Coral
   "Arquitetura"   = "#A3A500", # Olive
@@ -35,10 +22,22 @@ cores_cursos_palette <- c(
 )
 # ------------------------------------------------
 
+# Preparando os dados
+df_analise <- df %>%
+  mutate(
+    Sexo_label = factor(Sexo, 
+                        levels = c(0, 1), 
+                        labels = c("Masculino", "Feminino")),
+    Curso = factor(Curso, levels = c("Medicina", "Economia", "Direito", 
+                                     "Arquitetura", "Administracao")),
+    Nivel.de.satisfacao = factor(Nivel.de.satisfacao, 
+                                 levels = c("Baixa", "Media", "Alta"))
+  )
+
 
 # 2. GRÁFICO 1 (Refatorado): Alunos por Semestre e por Curso
 # ------------------------------------------------
-
+# (Blocos 2.1 a 2.5 permanecem idênticos, gerando os 5 histogramas)
 # --- 2.1: ADMINISTRAÇÃO ---
 print("--- Gráfico 11.1: Semestres - Administração ---")
 df_adm <- df_analise %>% filter(Curso == "Administracao")
@@ -105,7 +104,7 @@ print(grafico_med)
 ggsave("./plots/11_hist_semestres_Medicina.png", plot = grafico_med)
 
 
-# 3. GRÁFICO 12: Desempenho por Curso (COM A PALETA CORRETA)
+# 3. GRÁFICO 12: Desempenho por Curso (COM ORDEM CORRIGIDA)
 # ------------------------------------------------
 print("--- Gráfico 12: Desempenho por Curso ---")
 grafico_desempenho_curso <- ggplot(df_analise, aes(x = Curso, y = Desempenho.academico, fill = Curso)) +
@@ -122,13 +121,19 @@ print(grafico_desempenho_curso)
 ggsave("./plots/12_boxplot_desempenho_curso.png", plot = grafico_desempenho_curso)
 
 
-# 4. GRÁFICO 13: Desempenho por Semestre
+# 4. GRÁFICO 13: Desempenho por Semestre (COM COR CINZA)
 # ------------------------------------------------
 print("--- Gráfico 13: Desempenho vs. Semestres Cursados ---")
+
 grafico_desempenho_semestres <- ggplot(df_analise, aes(x = Semestres.cursados, y = Desempenho.academico)) +
-  geom_point(alpha = 0.6, color = "#D55E00") +
+  
+  # --- MUDANÇA AQUI ---
+  # Pontos agora são cinza escuro para evitar confusão com cores de curso
+  geom_point(alpha = 0.5, color = "gray20") + 
+  # --- FIM DA MUDANÇA ---
+  
   geom_smooth(method = "lm", color = "blue", se = FALSE) + 
-  stat_cor(method = "pearson", label.x = 7, label.y = 2) +
+  stat_cor(method = "pearson", label.x = 7, label.y = 2.5) + # Posição do R
   labs(title = "Relação entre Desempenho e Semestres Cursados",
        x = "Semestres Cursados",
        y = "Desempenho Acadêmico (Nota)") +
@@ -137,7 +142,7 @@ print(grafico_desempenho_semestres)
 ggsave("./plots/13_dispersao_desempenho_semestres.png", plot = grafico_desempenho_semestres)
 
 
-# 5. GRÁFICO 14: Desempenho por Semestre e por Curso (COM A PALETA CORRETA)
+# 5. GRÁFICO 14: Desempenho por Semestre e por Curso (COM ORDEM CORRIGIDA)
 # ------------------------------------------------
 print("--- Gráfico 14: Desempenho vs. Semestres (Faceted by Curso) ---")
 grafico_desempenho_semestres_curso <- ggplot(df_analise, aes(x = Semestres.cursados, y = Desempenho.academico, color = Curso)) +
@@ -153,5 +158,5 @@ print(grafico_desempenho_semestres_curso)
 ggsave("./plots/14_dispersao_desempenho_semestres_por_curso.png", plot = grafico_desempenho_semestres_curso, width = 10, height = 8)
 
 # --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-# FIM DA FASE 5 (ANÁLISE ADICIONAL)
+# FIM DA FASE 5
 # --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
